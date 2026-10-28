@@ -16,12 +16,13 @@
     --bg:#020617;
     --bg2:#0f172a;
     --card:rgba(255,255,255,.05);
-    --border:rgba(255,255,255,.1);
+    --border:rgba(255,255,255,.08);
     --text:#f8fafc;
     --muted:#94a3b8;
     --accent:#38bdf8;
     --success:#22c55e;
     --danger:#ef4444;
+    --warning:#f59e0b;
 }
 
 *{
@@ -53,73 +54,87 @@ header{
 
 header h1{
     font-size:3rem;
-    margin-bottom:10px;
 }
 
 header p{
     color:var(--muted);
+    margin-top:10px;
 }
 
 .stats{
     display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-    gap:20px;
+    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:15px;
     margin-bottom:25px;
 }
 
 .stat{
     background:var(--card);
-    border:1px solid var(--border);
     backdrop-filter:blur(12px);
+    border:1px solid var(--border);
     border-radius:20px;
     padding:20px;
 }
 
 .stat-number{
-    color:var(--accent);
     font-size:2rem;
     font-weight:700;
+    color:var(--accent);
+}
+
+#todayCount{
+    color:var(--success);
+}
+
+#overdueCount{
+    color:var(--danger);
 }
 
 .panel{
     background:var(--card);
-    border:1px solid var(--border);
     backdrop-filter:blur(12px);
+    border:1px solid var(--border);
     border-radius:20px;
     padding:25px;
     margin-bottom:25px;
 }
 
-.panel h2{
-    margin-bottom:20px;
+h2{
+    margin-bottom:15px;
 }
 
 .form-grid{
     display:grid;
-    grid-template-columns:2fr 1fr 1fr auto;
-    gap:12px;
+    grid-template-columns:2fr 1fr 1fr 1fr auto;
+    gap:10px;
 }
 
 input,
-select{
-    padding:14px;
+select,
+textarea{
     border:none;
     border-radius:12px;
-    font-size:15px;
+    padding:14px;
+}
+
+textarea{
+    width:100%;
+    margin-top:12px;
+    min-height:100px;
+    resize:vertical;
+}
+
+button{
+    border:none;
+    cursor:pointer;
 }
 
 .add-btn{
     background:var(--accent);
     color:white;
-    border:none;
+    padding:14px 20px;
     border-radius:12px;
-    cursor:pointer;
-    padding:14px 24px;
     font-weight:600;
-}
-
-.add-btn:hover{
-    opacity:.9;
 }
 
 .search{
@@ -136,11 +151,11 @@ select{
     background:var(--card);
     border:1px solid var(--border);
     border-radius:18px;
-    padding:18px;
+    padding:20px;
 }
 
 .task.completed{
-    opacity:.65;
+    opacity:.6;
 }
 
 .task.completed .task-title{
@@ -150,8 +165,7 @@ select{
 .task-header{
     display:flex;
     justify-content:space-between;
-    align-items:flex-start;
-    gap:20px;
+    gap:15px;
 }
 
 .task-title{
@@ -162,14 +176,20 @@ select{
 .task-meta{
     color:var(--muted);
     margin-top:8px;
+    line-height:1.5;
+}
+
+.notes{
+    margin-top:12px;
+    color:#dbeafe;
 }
 
 .badge{
     display:inline-block;
-    padding:6px 10px;
-    border-radius:999px;
     margin-top:10px;
-    font-size:.75rem;
+    padding:5px 10px;
+    border-radius:999px;
+    font-size:.8rem;
 }
 
 .high{
@@ -186,30 +206,34 @@ select{
 
 .actions{
     display:flex;
-    gap:10px;
+    gap:8px;
+    flex-wrap:wrap;
 }
 
 .complete-btn{
     background:var(--success);
     color:white;
-    border:none;
+    padding:8px 12px;
     border-radius:10px;
-    padding:8px 14px;
-    cursor:pointer;
+}
+
+.edit-btn{
+    background:var(--warning);
+    color:white;
+    padding:8px 12px;
+    border-radius:10px;
 }
 
 .delete-btn{
     background:var(--danger);
     color:white;
-    border:none;
+    padding:8px 12px;
     border-radius:10px;
-    padding:8px 14px;
-    cursor:pointer;
 }
 
 .empty{
-    color:var(--muted);
     text-align:center;
+    color:var(--muted);
     padding:30px;
 }
 
@@ -227,7 +251,6 @@ select{
 
 </style>
 </head>
-
 <body>
 
 <div class="container">
@@ -251,7 +274,17 @@ select{
 
     <div class="stat">
         <div id="completedCount" class="stat-number">0</div>
-        <div>Completed Tasks</div>
+        <div>Completed</div>
+    </div>
+
+    <div class="stat">
+        <div id="todayCount" class="stat-number">0</div>
+        <div>Due Today</div>
+    </div>
+
+    <div class="stat">
+        <div id="overdueCount" class="stat-number">0</div>
+        <div>Overdue</div>
     </div>
 
 </div>
@@ -262,19 +295,23 @@ select{
 
     <div class="form-grid">
 
-        <input
-            id="taskName"
-            type="text"
-            placeholder="Task name">
+        <input id="taskName" type="text" placeholder="Task Name">
 
-        <input
-            id="taskDate"
-            type="date">
+        <input id="taskDate" type="date">
 
         <select id="taskPriority">
-            <option value="High">High</option>
-            <option value="Medium" selected>Medium</option>
-            <option value="Low">Low</option>
+            <option value="High">🔴 High</option>
+            <option value="Medium" selected>🟡 Medium</option>
+            <option value="Low">🟢 Low</option>
+        </select>
+
+        <select id="taskCategory">
+            <option>Personal</option>
+            <option>Financial</option>
+            <option>Home</option>
+            <option>Vehicle</option>
+            <option>Health</option>
+            <option>Project</option>
         </select>
 
         <button class="add-btn" onclick="addTask()">
@@ -283,16 +320,20 @@ select{
 
     </div>
 
+    <textarea
+        id="taskNotes"
+        placeholder="Notes..."></textarea>
+
 </div>
 
 <input
     id="search"
     class="search"
     type="text"
-    placeholder="🔍 Search tasks..."
+    placeholder="🔍 Search Tasks..."
     oninput="renderTasks()">
 
-<h2 style="margin-bottom:15px;">Tasks</h2>
+<h2>Tasks</h2>
 
 <div id="taskList" class="task-list"></div>
 
@@ -300,62 +341,55 @@ select{
 
 <script>
 
-let tasks = JSON.parse(
-    localStorage.getItem("seshat_tasks")
-) || [];
+let tasks =
+JSON.parse(localStorage.getItem("seshat_tasks")) || [];
 
-function saveTasks() {
+function saveTasks(){
     localStorage.setItem(
         "seshat_tasks",
         JSON.stringify(tasks)
     );
 }
 
-function addTask() {
+function addTask(){
 
     const name =
-        document.getElementById("taskName")
-        .value.trim();
+        document.getElementById("taskName").value.trim();
 
-    const date =
-        document.getElementById("taskDate")
-        .value;
-
-    const priority =
-        document.getElementById("taskPriority")
-        .value;
-
-    if (!name) {
-        alert("Please enter a task.");
+    if(!name){
+        alert("Enter a task name.");
         return;
     }
 
     tasks.unshift({
-        id: Date.now(),
-        name: name,
-        date: date,
-        priority: priority,
-        completed: false
+        id:Date.now(),
+        name:name,
+        date:document.getElementById("taskDate").value,
+        priority:document.getElementById("taskPriority").value,
+        category:document.getElementById("taskCategory").value,
+        notes:document.getElementById("taskNotes").value.trim(),
+        completed:false
     });
 
+    clearForm();
     saveTasks();
-
-    document.getElementById("taskName").value = "";
-    document.getElementById("taskDate").value = "";
-
     renderTasks();
+}
+
+function clearForm(){
+
+    document.getElementById("taskName").value="";
+    document.getElementById("taskDate").value="";
+    document.getElementById("taskNotes").value="";
+    document.getElementById("taskPriority").value="Medium";
 }
 
 function toggleTask(id){
 
-    tasks = tasks.map(task => {
+    const task =
+    tasks.find(t=>t.id===id);
 
-        if(task.id === id){
-            task.completed = !task.completed;
-        }
-
-        return task;
-    });
+    task.completed=!task.completed;
 
     saveTasks();
     renderTasks();
@@ -363,11 +397,32 @@ function toggleTask(id){
 
 function deleteTask(id){
 
-    if(!confirm("Delete this task?")){
-        return;
-    }
+    if(!confirm("Delete this task?")) return;
 
-    tasks = tasks.filter(task => task.id !== id);
+    tasks =
+    tasks.filter(t=>t.id!==id);
+
+    saveTasks();
+    renderTasks();
+}
+
+function editTask(id){
+
+    const task =
+    tasks.find(t=>t.id===id);
+
+    if(!task) return;
+
+    const newName =
+    prompt("Task Name",task.name);
+
+    if(newName===null) return;
+
+    const newNotes =
+    prompt("Notes",task.notes || "");
+
+    task.name=newName.trim();
+    task.notes=newNotes || "";
 
     saveTasks();
     renderTasks();
@@ -375,51 +430,97 @@ function deleteTask(id){
 
 function updateStats(){
 
-    document.getElementById("totalCount").textContent =
-        tasks.length;
+    const today =
+    new Date().toISOString().split('T')[0];
 
-    document.getElementById("openCount").textContent =
-        tasks.filter(task => !task.completed).length;
+    document.getElementById("totalCount")
+    .textContent = tasks.length;
 
-    document.getElementById("completedCount").textContent =
-        tasks.filter(task => task.completed).length;
+    document.getElementById("openCount")
+    .textContent =
+    tasks.filter(
+        t=>!t.completed
+    ).length;
+
+    document.getElementById("completedCount")
+    .textContent =
+    tasks.filter(
+        t=>t.completed
+    ).length;
+
+    document.getElementById("todayCount")
+    .textContent =
+    tasks.filter(
+        t=>!t.completed &&
+        t.date===today
+    ).length;
+
+    document.getElementById("overdueCount")
+    .textContent =
+    tasks.filter(
+        t=>!t.completed &&
+        t.date &&
+        t.date < today
+    ).length;
 }
 
 function renderTasks(){
 
     const search =
-        document.getElementById("search")
-        .value
-        .toLowerCase();
+    document.getElementById("search")
+    .value.toLowerCase();
 
-    const container =
-        document.getElementById("taskList");
+    const today =
+    new Date().toISOString().split('T')[0];
 
-    container.innerHTML = "";
+    const list =
+    document.getElementById("taskList");
+
+    list.innerHTML="";
 
     const filtered =
-        tasks.filter(task =>
-            task.name.toLowerCase().includes(search)
-        );
+    tasks
+    .filter(t =>
+        t.name.toLowerCase().includes(search)
+    )
+    .sort((a,b)=>{
 
-    if(filtered.length === 0){
+        if(a.completed!==b.completed)
+            return a.completed - b.completed;
 
-        container.innerHTML =
-            '<div class="empty">No tasks found.</div>';
+        const aOver =
+            a.date && a.date < today;
+
+        const bOver =
+            b.date && b.date < today;
+
+        if(aOver!==bOver)
+            return bOver - aOver;
+
+        return (a.date || "9999")
+            .localeCompare(
+                b.date || "9999"
+            );
+    });
+
+    if(filtered.length===0){
+
+        list.innerHTML=
+        '<div class="empty">No Tasks Found</div>';
 
         updateStats();
         return;
     }
 
-    filtered.forEach(task => {
+    filtered.forEach(task=>{
 
         const card =
-            document.createElement("div");
+        document.createElement("div");
 
         card.className =
-            task.completed
-            ? "task completed"
-            : "task";
+        task.completed
+        ? "task completed"
+        : "task";
 
         card.innerHTML = `
             <div class="task-header">
@@ -431,12 +532,21 @@ function renderTasks(){
                     </div>
 
                     <div class="task-meta">
-                        Due: ${task.date || "No Due Date"}
+                        📁 ${task.category}<br>
+                        📅 ${task.date || "No Due Date"}
                     </div>
 
                     <div class="badge ${task.priority.toLowerCase()}">
                         ${task.priority}
                     </div>
+
+                    ${
+                        task.notes
+                        ?
+                        `<div class="notes">${task.notes}</div>`
+                        :
+                        ''
+                    }
 
                 </div>
 
@@ -446,7 +556,15 @@ function renderTasks(){
                         class="complete-btn"
                         onclick="toggleTask(${task.id})">
 
-                        ${task.completed ? "Undo" : "Complete"}
+                        ${task.completed ? 'Undo' : 'Complete'}
+
+                    </button>
+
+                    <button
+                        class="edit-btn"
+                        onclick="editTask(${task.id})">
+
+                        Edit
 
                     </button>
 
@@ -463,7 +581,7 @@ function renderTasks(){
             </div>
         `;
 
-        container.appendChild(card);
+        list.appendChild(card);
 
     });
 
