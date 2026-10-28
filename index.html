@@ -53,11 +53,11 @@ header{
 
 header h1{
     font-size:3rem;
+    margin-bottom:10px;
 }
 
 header p{
     color:var(--muted);
-    margin-top:10px;
 }
 
 .stats{
@@ -100,7 +100,8 @@ header p{
     gap:12px;
 }
 
-input,select{
+input,
+select{
     padding:14px;
     border:none;
     border-radius:12px;
@@ -115,6 +116,10 @@ input,select{
     cursor:pointer;
     padding:14px 24px;
     font-weight:600;
+}
+
+.add-btn:hover{
+    opacity:.9;
 }
 
 .search{
@@ -135,7 +140,7 @@ input,select{
 }
 
 .task.completed{
-    opacity:.6;
+    opacity:.65;
 }
 
 .task.completed .task-title{
@@ -161,10 +166,10 @@ input,select{
 
 .badge{
     display:inline-block;
-    padding:5px 10px;
+    padding:6px 10px;
     border-radius:999px;
     margin-top:10px;
-    font-size:.8rem;
+    font-size:.75rem;
 }
 
 .high{
@@ -222,6 +227,7 @@ input,select{
 
 </style>
 </head>
+
 <body>
 
 <div class="container">
@@ -234,17 +240,17 @@ input,select{
 <div class="stats">
 
     <div class="stat">
-        <div class="stat-number" id="totalCount">0</div>
+        <div id="totalCount" class="stat-number">0</div>
         <div>Total Tasks</div>
     </div>
 
     <div class="stat">
-        <div class="stat-number" id="openCount">0</div>
+        <div id="openCount" class="stat-number">0</div>
         <div>Open Tasks</div>
     </div>
 
     <div class="stat">
-        <div class="stat-number" id="completedCount">0</div>
+        <div id="completedCount" class="stat-number">0</div>
         <div>Completed Tasks</div>
     </div>
 
@@ -319,7 +325,7 @@ function addTask() {
         document.getElementById("taskPriority")
         .value;
 
-    if(name === ""){
+    if (!name) {
         alert("Please enter a task.");
         return;
     }
@@ -373,10 +379,10 @@ function updateStats(){
         tasks.length;
 
     document.getElementById("openCount").textContent =
-        tasks.filter(t => !t.completed).length;
+        tasks.filter(task => !task.completed).length;
 
     document.getElementById("completedCount").textContent =
-        tasks.filter(t => t.completed).length;
+        tasks.filter(task => task.completed).length;
 }
 
 function renderTasks(){
@@ -411,39 +417,54 @@ function renderTasks(){
             document.createElement("div");
 
         card.className =
-            "task" +
-            (task.completed ? " completed" : "");
+            task.completed
+            ? "task completed"
+            : "task";
 
         card.innerHTML = `
             <div class="task-header">
 
                 <div>
+
                     <div class="task-title">
                         ${task.name}
                     </div>
 
                     <div class="task-meta">
-                        Due:
-                        ${task.date || "No Due Date"}
+                        Due: ${task.date || "No Due Date"}
                     </div>
 
                     <div class="badge ${task.priority.toLowerCase()}">
                         ${task.priority}
                     </div>
+
                 </div>
 
                 <div class="actions">
+
                     <button
                         class="complete-btn"
                         onclick="toggleTask(${task.id})">
+
                         ${task.completed ? "Undo" : "Complete"}
+
                     </button>
 
                     <button
                         class="delete-btn"
                         onclick="deleteTask(${task.id})">
+
                         Delete
-            rd);
+
+                    </button>
+
+                </div>
+
+            </div>
+        `;
+
+        container.appendChild(card);
+
     });
 
     updateStats();
